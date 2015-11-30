@@ -1,0 +1,19 @@
+{
+  "name": "weCare-server",
+  "description": "",
+  "main": "",
+  "authors": [
+    "Satit Rianpit <siteslave@msn.com>"
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/siteslave/weCare-Server",
+  "moduleType": [],
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "./public/vendor",
+    "test",
+    "tests"
+  ]
+}
