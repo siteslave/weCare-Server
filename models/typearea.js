@@ -9,6 +9,7 @@ module.exports = {
     var col = db.collection('person');
     col.createIndex({TYPEAREA: 1});
     col.createIndex({HOSPCODE: 1});
+    col.createIndex({DISCHARGE: 1});
 
     col.aggregate([{
       $match: {
@@ -129,7 +130,7 @@ module.exports = {
   checkReserved: function (db, cid) {
     var q = Q.defer();
 
-    var col = db.collection('person_reserved')
+    var col = db.collection('person_reserved');
     col.createIndex({CID: 1});
 
     col.find({CID: String(cid)})

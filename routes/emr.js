@@ -195,6 +195,7 @@ router.post('/detail', (req, res, next) => {
     res.send({ok: false, msg: err})
   });
 });
+
 // service list
 router.post('/service_list', (req, res, next) => {
   var cid = req.body.cid;
@@ -241,6 +242,161 @@ router.post('/service_list', (req, res, next) => {
                     obj.TIME_SERV = v.TIME_SERV;
                     obj.STR_TIME = v.STR_TIME;
                     obj.SEQ = v.SEQ;
+                    __services.push(obj);
+                  });
+                  res.send({
+                    ok: true,
+                    rows: __services
+                  });
+                }, (err) => {
+                  console.log(err);
+                  res.send({
+                    ok: false,
+                    msg: err
+                  });
+                });
+            } else {
+              res.send({
+                ok: false,
+                msg: 'ไม่พบรายการ'
+              });
+            }
+          });
+      }
+    } else {
+      res.send({ok: false, msg: 'Access denied!'});
+    }
+  }, (err) => {
+    res.send({ok: false, msg: err})
+  });
+
+});
+
+// service anc
+router.post('/anc', (req, res, next) => {
+
+  let db = req.db;
+  let hospitals = [];
+  let services = [];
+
+  let cid = req.body.cid;
+  let gravida = req.body.gravida;
+  let _hospcode = req.body._hospcode;
+  let _key = req.body._key;
+
+  let __key = Auth.decrypt(_key);
+
+  Auth.doAuth(db, _hospcode, __key)
+  .then((success) => {
+    if (success) {
+      if (!cid) {
+        res.send({
+          ok: false,
+          msg: 'CID Not found!'
+        });
+      } else {
+        Emr.getHPID(db, cid)
+          .then((hpid) => {
+            console.log(hpid);
+            if (hpid.length) {
+              Emr.getAncHistory(db, hpid, String(gravida))
+                .then((docs) => {
+                  services = docs;
+                  docs.forEach((v) => {
+                    hospitals.push(v.HOSPCODE);
+                  });
+                  return Hospitals.getHospitals(db, hospitals);
+                })
+                .then((__hospitals) => {
+                  let __services = [];
+                  services.forEach((v) => {
+                    let obj = {};
+                    obj.HOSPCODE = v.HOSPCODE;
+                    let idxHOS = _.findIndex(__hospitals, {
+                      hospcode: v.HOSPCODE
+                    });
+                    obj.HOSPNAME = idxHOS >= 0 ? __hospitals[idxHOS].hosptype + __hospitals[idxHOS].name : '';
+                    obj.DATE_SERV = v.DATE_SERV;
+                    obj.GRAVIDA = v.GRAVIDA;
+                    obj.ANCNO = v.ANCNO;
+                    obj.ANCRESULT = v.ANCRESULT ? v.ANCRESULT == '1' ? 'ปกติ' : 'ผิดปกติ' : 'ไม่ทราบ';
+                    __services.push(obj);
+                  });
+                  res.send({
+                    ok: true,
+                    rows: __services
+                  });
+                }, (err) => {
+                  console.log(err);
+                  res.send({
+                    ok: false,
+                    msg: err
+                  });
+                });
+            } else {
+              res.send({
+                ok: false,
+                msg: 'ไม่พบรายการ'
+              });
+            }
+          });
+      }
+    } else {
+      res.send({ok: false, msg: 'Access denied!'});
+    }
+  }, (err) => {
+    res.send({ok: false, msg: err})
+  });
+
+});
+
+// service postnatal
+router.post('/postnatal', (req, res, next) => {
+
+  let db = req.db;
+  let hospitals = [];
+  let services = [];
+
+  let cid = req.body.cid;
+  let gravida = req.body.gravida;
+  let _hospcode = req.body._hospcode;
+  let _key = req.body._key;
+
+  let __key = Auth.decrypt(_key);
+
+  Auth.doAuth(db, _hospcode, __key)
+  .then((success) => {
+    if (success) {
+      if (!cid) {
+        res.send({
+          ok: false,
+          msg: 'CID Not found!'
+        });
+      } else {
+        Emr.getHPID(db, cid)
+          .then((hpid) => {
+            console.log(hpid);
+            if (hpid.length) {
+              Emr.getPostnatalHistory(db, hpid, String(gravida))
+                .then((docs) => {
+                  services = docs;
+                  docs.forEach((v) => {
+                    hospitals.push(v.PPPLACE);
+                  });
+                  return Hospitals.getHospitals(db, hospitals);
+                })
+                .then((__hospitals) => {
+                  let __services = [];
+                  services.forEach((v) => {
+                    let obj = {};
+                    obj.HOSPCODE = v.PPPLACE;
+                    let idxHOS = _.findIndex(__hospitals, {
+                      hospcode: v.PPPLACE
+                    });
+                    obj.HOSPNAME = idxHOS >= 0 ? __hospitals[idxHOS].hosptype + __hospitals[idxHOS].name : '';
+                    obj.PPCARE = v.PPCARE;
+                    obj.GRAVIDA = v.GRAVIDA;
+                    obj.PPRESULT = v.PPRESULT ? v.PPRESULT == '1' ? 'ปกติ' : 'ผิดปกติ' : 'ไม่ทราบ';
                     __services.push(obj);
                   });
                   res.send({

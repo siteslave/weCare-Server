@@ -124,6 +124,119 @@ module.exports = {
 
   },
 
+  getAncHistory: (db, hpid, gravida) => {
+    var q = Q.defer();
+
+    var col = db.collection('anc');
+    col.createIndex({HOSPCODE: 1});
+    col.createIndex({PID: 1});
+
+    col.aggregate([{
+      $project: {
+        HPID: {
+          $concat: ["$HOSPCODE", "$PID"]
+        },
+        DATE_SERV: "$DATE_SERV",
+        GRAVIDA: "$GRAVIDA",
+        ANCNO: "$ANCNO",
+        HOSPCODE: "$HOSPCODE",
+        ANCRESULT: "$ANCRESULT"
+      }
+    }, {
+      $match: {
+        HPID: {
+          $in: hpid
+          //$in: [/*"04954003453", */"04958006350"]
+        },
+        GRAVIDA: gravida
+      }
+    }, {
+      $limit: 20
+    }, {
+      $sort: {
+        DATE_SERV: -1
+      }
+    }]).toArray((err, docs) => {
+      //console.log(docs);
+      if (err) {
+        q.reject(err);
+      } else {
+        var services = [];
+        _.forEach(docs, (v) => {
+          var obj = {};
+          obj.HOSPCODE = v.HOSPCODE;
+          obj.GRAVIDA = v.GRAVIDA;
+          obj.ANCNO = v.ANCNO;
+          obj.ANCRESULT = v.ANCRESULT;
+          obj.DATE_SERV = moment(v.DATE_SERV, 'x').format('DD/MM/YYYY');
+          services.push(obj);
+        });
+
+        q.resolve(services);
+      }
+    });
+
+    return q.promise;
+
+  },
+
+  getPostnatalHistory: (db, hpid, gravida) => {
+    var q = Q.defer();
+
+    var col = db.collection('postnatal');
+    col.createIndex({HOSPCODE: 1});
+    col.createIndex({PID: 1});
+
+    col.aggregate([{
+      $project: {
+        HPID: {
+          $concat: ["$HOSPCODE", "$PID"]
+        },
+        DATE_SERV: "$DATE_SERV",
+        GRAVIDA: "$GRAVIDA",
+        PPCARE: "$PPCARE",
+        PPPLACE: "$PPPLACE",
+        PPRESULT: "$PPRESULT",
+        HOSPCODE: "$HOSPCODE"
+      }
+    }, {
+      $match: {
+        HPID: {
+          $in: hpid
+          //$in: [/*"04954003453", */"04958006350"]
+        },
+        GRAVIDA: gravida
+      }
+    }, {
+      $limit: 20
+    }, {
+      $sort: {
+        PPCARE: -1
+      }
+    }]).toArray((err, docs) => {
+      //console.log(docs);
+      if (err) {
+        q.reject(err);
+      } else {
+        var services = [];
+        _.forEach(docs, (v) => {
+          var obj = {};
+          obj.HOSPCODE = v.HOSPCODE;
+          obj.GRAVIDA = v.GRAVIDA;
+          obj.PPRESULT = v.PPRESULT;
+          obj.PPPLACE = v.PPPLACE;
+          obj.PPCARE = v.PPCARE ? moment(v.PPCARE, 'x').format('DD/MM/YYYY') : '';
+          services.push(obj);
+        });
+
+        q.resolve(services);
+      }
+    });
+
+    return q.promise;
+
+  },
+
   getDiagnosisOPD: (db, hospcode, pid, seq) => {
     let q = Q.defer();
 
