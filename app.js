@@ -4,6 +4,7 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
+var MongoClient = require('mongodb').MongoClient;
 
 var routes = require('./routes/index');
 var users = require('./routes/users');
@@ -21,14 +22,11 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-var dbUrl = 'mongodb://localhost:27017/khdc';
-var KEY = '9nRmaSi7mFVH4IB4XRxi';
+var uri = 'mongodb://localhost:27017/khdc';
+var key = 'mANiNThEdARk';
 
-app.use(function (req, res, next) {
-  req.dbUrl = dbUrl;
-  req.key = KEY;
-  next();
-});
+var expressMongoDb = require('express-mongo-db');
+app.use(expressMongoDb(uri));
 
 app.use('/', routes);
 app.use('/emr', emr);
@@ -40,5 +38,18 @@ app.use(function(req, res, next) {
   err.status = 404;
   next(err);
 });
+
+app.use(function(err, req, res, next) {
+  res.status(err.status || 500);
+  if (req.xhr) {
+    res.send({ok: false, msg: err.message});
+  } else {
+    res.render('error', {
+      message: err.message,
+      error: {}
+    });
+  }
+});
+
 
 module.exports = app;
