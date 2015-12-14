@@ -3,27 +3,17 @@ var router = express.Router();
 
 var moment = require('moment');
 var _ = require('lodash');
-var MongoClient = require('mongodb').MongoClient;
-var cryptojs = require('crypto-js');
+
 // models
 var emr = require('../models/emr');
 var hospitals = require('../models/hospitals');
 // service list
-router.post('/service_list', function(req, res, next) {
+router.post('/service_list', (req, res, next) => {
   var url = req.dbUrl;
-  var query = req.body.query;
+  var pid = req.body.pid;
 
-  // //console.log(query);
-  var bytes = cryptojs.AES.decrypt(query, req.key);
-  var data = bytes.toString(cryptojs.enc.Utf8);
-  data = JSON.parse(data);
-  //
-  // console.log(cid);
-  // // Get encrypted CID
-  //
-  // // Decrypt CID
   if (data.pid && data.hospcode) {
-    MongoClient.connect(url, function(err, db) {
+    MongoClient.connect(url, (err, db) => {
       if (err) {
         console.log(err);
         res.send({
@@ -40,19 +30,19 @@ router.post('/service_list', function(req, res, next) {
           .then(function (hpid) {
             return emr.getServiceHistory(db, hpid);
           })
-          .then(function (services) {
+          .then((services) => {
             _services = services;
 
-            _.forEach(services, function (v) {
+            _.forEach(services, (v) => {
               _hospitals.push(v.HOSPCODE);
             });
 
             return hospitals.getHospitals(db, _hospitals);
 
           })
-          .then(function (__hospitals) {
+          .then((__hospitals) => {
             var __services = [];
-            _.forEach(_services, function (v, i) {
+            _.forEach(_services, (v, i) => {
               var obj = {};
               obj.HOSPCODE = v.HOSPCODE;
               obj.PID = v.PID;
@@ -75,9 +65,6 @@ router.post('/service_list', function(req, res, next) {
           db.close();
           console.log(err);
         });
-/*
-
-*/
       }
     });
   } else {

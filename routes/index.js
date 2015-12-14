@@ -8,9 +8,7 @@ var Typearea = require('../models/typearea');
 var Hospitals = require('../models/hospitals');
 /* GET home page. */
 router.get('/', function(req, res, next) {
-  res.render('index', {
-    title: 'Express'
-  });
+  res.send({ok: true, msg: `Welcome to weCare Server`, server_time: new Date()})
 });
 
 router.post('/detail', function (req, res, next) {

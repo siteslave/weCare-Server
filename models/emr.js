@@ -21,6 +21,7 @@ module.exports = {
 
     return q.promise;
   },
+  
   getHPID: function(db, cid) {
     var q = Q.defer();
 
