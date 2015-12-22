@@ -3,8 +3,7 @@ var Q = require('q');
 module.exports = {
   getHospitals: function(db, hospitals) {
     var q = Q.defer();
-
-    db.collection('hospitals').find({
+    db.collection('l_hospitals').find({
       hospcode: {
         $in: hospitals
       }

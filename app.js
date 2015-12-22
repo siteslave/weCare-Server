@@ -4,10 +4,8 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
-var MongoClient = require('mongodb').MongoClient;
 
 var routes = require('./routes/index');
-var users = require('./routes/users');
 var emr = require('./routes/emr');
 
 var app = express();
@@ -30,7 +28,6 @@ app.use(expressMongoDb(uri));
 
 app.use('/', routes);
 app.use('/emr', emr);
-app.use('/users', users);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
@@ -41,14 +38,7 @@ app.use(function(req, res, next) {
 
 app.use(function(err, req, res, next) {
   res.status(err.status || 500);
-  if (req.xhr) {
-    res.send({ok: false, msg: err.message});
-  } else {
-    res.render('error', {
-      message: err.message,
-      error: {}
-    });
-  }
+  res.send({ok: false, msg: err.message});
 });
 
 

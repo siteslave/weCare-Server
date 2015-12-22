@@ -1,3 +1,5 @@
+"use strict";
+
 var Q = require('q');
 
 module.exports = {
@@ -53,7 +55,7 @@ module.exports = {
       CID: 1, PID: 1, NAME: 1, LNAME: 1, _id: 0
     }).toArray(function (err, rows) {
       if (err) {
-        q.reject(err)
+        q.reject(err);
         console.log(err);
       } else {
         q.resolve(rows)
@@ -78,6 +80,26 @@ module.exports = {
         q.resolve(reserveds)
       }
     });
+
+    return q.promise;
+  },
+
+  changeTypeArea: function (db, hospcode, cid, typearea) {
+    var q = Q.defer();
+
+    db.collection('person').createIndex({CID:1});
+    db.collection('person').createIndex({HOSPCODE:1});
+
+    db.collection('person')
+      .updateOne({CID: cid, HOSPCODE: hospcode}, {
+        $set: {TYPEAREA: typearea}
+      }, (err) => {
+        if (err) {
+          q.reject(err);
+        } else {
+          q.resolve();
+        }
+      });
 
     return q.promise;
   },

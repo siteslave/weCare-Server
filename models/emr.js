@@ -1,31 +1,45 @@
+"use strict";
+
 var Q = require('q');
 var _ = require('lodash');
 var moment = require('moment');
 
 module.exports = {
-  getCid: function (db, hospcode, pid) {
+  getDetail: (db, hospcode, pid, seq) => {
     var q = Q.defer();
 
-    db.collection('person')
-    .find({HOSPCODE: hospcode, PID: pid}, {_id: 0, CID: 1})
-    .limit(1)
-    .toArray(function (err, docs) {
-      if (err) {
-        console.log(err);
-        q.reject(err);
-      } else {
-        console.log(docs);
-        q.resolve(docs[0].CID);
-      }
-    })
+    var col = db.collection('service');
+    col.createIndex({HOSPCODE: 1});
+    col.createIndex({PID: 1});
+    col.createIndex({SEQ: 1});
+
+    db.collection('service')
+      .find({
+        HOSPCODE: hospcode,
+        PID: pid,
+        SEQ: seq
+      }, { _id: 0 })
+      .toArray((err, docs) => {
+        if (err) {
+          console.log(err);
+          q.reject(err);
+        } else {
+          q.resolve(docs);
+        }
+      });
 
     return q.promise;
   },
-  
-  getHPID: function(db, cid) {
+
+  getHPID: (db, cid) => {
     var q = Q.defer();
 
-    db.collection('person').aggregate([{
+    var col = db.collection('person');
+    col.createIndex({CID: 1});
+    col.createIndex({HOSPCODE: 1});
+    col.createIndex({PID: 1});
+
+    col.aggregate([{
       $match: {
         CID: String(cid)
       }
@@ -35,13 +49,13 @@ module.exports = {
           $concat: ["$HOSPCODE", "$PID"]
         }
       }
-    }]).toArray(function(err, docs) {
+    }]).toArray((err, docs) => {
       console.log(docs);
       if (err) {
         q.reject(err);
       } else {
         var hpid = [];
-        _.forEach(docs, function(v) {
+        _.forEach(docs, (v) => {
           hpid.push(v.HPID);
         });
 
@@ -53,10 +67,14 @@ module.exports = {
 
   },
 
-  getServiceHistory: function(db, hpid) {
+  getServiceHistory: (db, hpid) => {
     var q = Q.defer();
 
-    db.collection('service').aggregate([{
+    var col = db.collection('service');
+    col.createIndex({HOSPCODE: 1});
+    col.createIndex({PID: 1});
+
+    col.aggregate([{
       $project: {
         HPID: {
           $concat: ["$HOSPCODE", "$PID"]
@@ -65,31 +83,33 @@ module.exports = {
         DATE_SERV: "$DATE_SERV",
         TIME_SERV: "$TIME_SERV",
         SEQ: "$SEQ",
-        HOSPCODE: "$HOSPCODE",
+        HOSPCODE: "$HOSPCODE"
       }
     }, {
       $match: {
         HPID: {
           $in: hpid
         }
-      },
+      }
     }, {
       $limit: 10
     }, {
-      $sort: {DATE_SERV: -1}
-    }]).toArray(function(err, docs) {
+      $sort: {
+        DATE_SERV: -1
+      }
+    }]).toArray((err, docs) => {
       //console.log(docs);
       if (err) {
         q.reject(err);
       } else {
         var services = [];
-        _.forEach(docs, function (v) {
+        _.forEach(docs, (v) => {
           var obj = {};
           obj.HOSPCODE = v.HOSPCODE;
           obj.PID = v.PID;
           obj.SEQ = v.SEQ;
           obj.HPID = v.HPID;
-          obj.DATE_SERV = moment(v.DATE_SERV).format('DD/MM/YYYY');
+          obj.DATE_SERV = moment(v.DATE_SERV, 'x').format('DD/MM/YYYY');
           obj.TIME_SERV = moment(v.TIME_SERV, 'HHmmss').format('HH:mm:ss');
           var strTime = obj.DATE_SERV + ' ' + obj.TIME_SERV;
           strTime = moment(strTime, 'DD/MM/YYYY HH:mm:ss').format('x');
@@ -103,5 +123,109 @@ module.exports = {
 
     return q.promise;
 
+  },
+
+  getDiagnosisOPD: (db, hospcode, pid, seq) => {
+    let q = Q.defer();
+
+    var col = db.collection('diagnosis_opd');
+    col.createIndex({SEQ: 1});
+    col.createIndex({HOSPCODE: 1});
+    col.createIndex({PID: 1});
+
+    col
+      .find({
+        HOSPCODE: hospcode,
+        PID: pid,
+        SEQ: seq
+      }, { _id: 0 })
+      .toArray((err, docs) => {
+        if (err) {
+          console.log(err);
+          q.reject(err);
+        } else {
+          q.resolve(docs);
+        }
+      });
+
+    return q.promise;
+  },
+
+  getProcedureOpd: (db, hospcode, pid, seq) => {
+    let q = Q.defer();
+
+    var col = db.collection('procedure_opd');
+    col.createIndex({SEQ: 1});
+    col.createIndex({HOSPCODE: 1});
+    col.createIndex({PID: 1});
+
+    col
+      .find({
+        HOSPCODE: hospcode,
+        PID: pid,
+        SEQ: seq
+      }, { _id: 0 })
+      .toArray((err, docs) => {
+        if (err) {
+          console.log(err);
+          q.reject(err);
+        } else {
+          q.resolve(docs);
+        }
+      });
+
+    return q.promise;
+  },
+
+  getDrugOpd: (db, hospcode, pid, seq) => {
+    let q = Q.defer();
+
+    var col = db.collection('drug_opd');
+    col.createIndex({SEQ: 1});
+    col.createIndex({HOSPCODE: 1});
+    col.createIndex({PID: 1});
+
+    col
+      .find({
+        HOSPCODE: hospcode,
+        PID: pid,
+        SEQ: seq
+      }, { _id: 0 })
+      .toArray((err, docs) => {
+        if (err) {
+          console.log(err);
+          q.reject(err);
+        } else {
+          q.resolve(docs);
+        }
+      });
+
+    return q.promise;
+  },
+
+  getLabFu: (db, hospcode, pid, seq) => {
+    let q = Q.defer();
+
+    var col = db.collection('labfu');
+    col.createIndex({SEQ: 1});
+    col.createIndex({HOSPCODE: 1});
+    col.createIndex({PID: 1});
+
+    col
+      .find({
+        HOSPCODE: hospcode,
+        PID: pid,
+        SEQ: seq
+      }, { _id: 0 })
+      .toArray((err, docs) => {
+        if (err) {
+          console.log(err);
+          q.reject(err);
+        } else {
+          q.resolve(docs);
+        }
+      });
+
+    return q.promise;
   }
-}
+};
