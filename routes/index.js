@@ -75,8 +75,6 @@ router.post('/detail', (req, res, next) => {
       } else {
         Typearea.getPersonDuplicated(db, cid)
           .then((docs) => {
-            console.log(docs);
-
             let _hospitals = [];
             person = docs;
             // get Hostial name

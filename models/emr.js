@@ -50,7 +50,6 @@ module.exports = {
         }
       }
     }]).toArray((err, docs) => {
-      console.log(docs);
       if (err) {
         q.reject(err);
       } else {
