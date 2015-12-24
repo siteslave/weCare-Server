@@ -14,7 +14,8 @@ module.exports = {
       $match: {
         TYPEAREA: {
           $in: ["1", "3"]
-        }
+        },
+        DISCHARGE: "9"
       }
     }, {
       $group: {
@@ -111,7 +112,7 @@ module.exports = {
     db.collection('person').createIndex({TYPEAREA:1});
     db.collection('hospitals').createIndex({hospcode:1});
 
-    db.collection('person').find({CID: String(cid), TYPEAREA: {$in: ['1', '3']}}, {
+    db.collection('person').find({CID: String(cid), TYPEAREA: {$in: ['1', '3']}, DISCHARGE: "9"}, {
       _id: 0, HOSPCODE: 1, PID: 1, CID: 1, TYPEAREA: 1, NAME: 1, LNAME: 1, SEX: 1, BIRTH: 1, D_UPDATE: 1
     }).toArray(function (err, docs) {
       if (err) {
