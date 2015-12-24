@@ -147,7 +147,7 @@ router.post('/detail', (req, res, next) => {
               obj.amount = v.AMOUNT;
               obj.price = v.DRUGPRICE;
               obj.cost = v.DRUGCOST;
-              obj.total = parseFloat(v.DRUGPRICE) * parseFloat(v.DRUGCOST);
+              obj.total = parseFloat(v.DRUGPRICE) * parseFloat(v.AMOUNT);
               drugs.push(obj);
             });
 
